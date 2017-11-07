@@ -26,14 +26,11 @@
 #define SF_WIFI_BSSID_SIZE 6
 
 // Set your AppEUI and AppKey
-const char *appEui = "70B3D57ED0007DCD";
-const char *appKey = "ED3122117C4341D72A08EF875A0EEA30";
-
-//const char *appEui = "0000000000000000";
-//const char *appKey = "00000000000000000000000000000000";
+const char *appEui = "0000000000000000";
+const char *appKey = "00000000000000000000000000000000";
 
 // Replace REPLACE_ME with TTN_FP_EU868 or TTN_FP_US915
-#define freqPlan TTN_FP_EU868
+#define freqPlan REPLACE_ME
 
 // Define the used serials
 #define debugSerial SerialUSB
@@ -43,12 +40,13 @@ const char *appKey = "ED3122117C4341D72A08EF875A0EEA30";
 // Prototyping the functions
 char *readLine(uint32_t waitTime = SF_ESP8266_DEFAULT_WAIT);
 bool waitForOK(uint32_t waitTime = SF_ESP8266_DEFAULT_WAIT);
+void sendBssid();
 
 // Declaring variables
 uint32_t timeout;
 uint8_t numberOfBssid = 4; // Set the number of bssid's you want to scan
 uint8_t payloadLength = numberOfBssid * SF_WIFI_BSSID_SIZE; 
-char buffer[SF_ESP8266_BUFFER_SIZE];
+char buffer[SF_ESP8266_BUFFER_SIZE]; // Buffer for the ESP stream
 byte aps[ACCESS_POINTS][SF_WIFI_BSSID_SIZE]; // The array that holds the Bssid's
 
 // TTN constructor
@@ -193,17 +191,7 @@ void sendBssid()
   ttn.sendBytes(payload, sizeof(payload));
   delay(60000);
 }
-/*
-int signalSort()
-{
-  for (int i = 0; i < bssidNumber; i++) {
-    for (int j = i + 1; j < n; j++) {
-      if (WiFi.RSSI(indices[j]) > WiFi.RSSI(indices[i])) {
-        swap(indices[i], indices[j]);
-      }
-    }
-  }
-*/
+
 /****************************
 *     Payload function      *
 ****************************/
