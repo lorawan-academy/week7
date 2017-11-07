@@ -1,0 +1,18 @@
+{
+  "name": "wifi_localization_webapp",
+  "version": "1.0.0",
+  "description": "small web app for wifi localization sent through LoraWan",
+  "main": "app.js",
+  "scripts": {
+    "test": "make test"
+  },
+  "author": "Emmanuelle Lejeail",
+  "license": "MIT",
+  "dependencies": {
+    "@google/maps": "^0.4.5",
+    "body-parser": "^1.18.2",
+    "express": "^4.16.2",
+    "http": "0.0.0",
+    "ttn": "^2.2.8"
+  }
+}
