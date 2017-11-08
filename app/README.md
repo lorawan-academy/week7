@@ -206,3 +206,6 @@ Then we will need to add a script in our html page to fetch the location that's 
 </html>
 ```
 Stop the server and start it again. Let's go to http://localhost:8000. You should see a fancy map with the marker on your current location.
+<img src="../img/geolocation.png" width="350"/>
+The messages that you receive in the terminal should also look like this:
+<img src="../img/msg_wifi_localization.png" width="350"/>
