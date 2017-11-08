@@ -1,14 +1,14 @@
-const ttn = require("ttn");
-const app = require("express")();
-const http = require("http").Server(app);
-const bodyParser = require("body-parser");
+const ttn = require("ttn")
+const app = require("express")()
+const http = require("http").Server(app)
+const bodyParser = require("body-parser")
 
-const googleMapsClient = require('@google/maps').createClient({
-  key: 'AIzaSyCZvqymBswGMTjzvpdyBs-TdZZwXmIBZlQ'
-});
+const googleMapsClient = require("@google/maps").createClient({
+  key: "xxxxxxxxxxxxxxxxxxxxxxxxxx"
+})
 
-var appID = "wifi_localization"
-var accessKey = "ttn-account-v2.zFEkcUxwVSdxzZIQWJBTaLlzN2oopw-wFNixSRSzOSA"
+var appID = "xxxxxxxxxxxxxxxxx"
+var accessKey = "ttn-account-v2.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
 var macAddress1 = ""
 var macAddress2 = ""
