@@ -15,10 +15,8 @@
   <script>
   function initMap() {
     $.get("/generator", function(data){
-      alert(parseFloat(JSON.stringify(data.lng)))
       var uluru = {lat: parseFloat(JSON.stringify(data.lat)), lng: parseFloat(JSON.stringify(data.lng))};
-      //var uluru = {lat: 52.3952826, lng: 4.8734992};
-      var map = new google.maps.Map(document.getElementById('map'), {
+      var map = new google.maps.Map(document.getElementById("map"), {
         zoom: 4,
         center: uluru
       });
@@ -31,7 +29,7 @@
   </script>
   <script>
   $.get("/generator", function(data) {
-    $("body").append("Estimated address: " + JSON.parse(data)['address'])
+    $("body").append("Estimated address: " + JSON.parse(data)["address"]);
   });
   </script>
   <script async defer
