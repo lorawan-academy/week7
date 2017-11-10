@@ -173,9 +173,9 @@ void loop()
 There are allot of ‘AT’ commands you can send to the device, to configure or check settings. A good reference guide can be found here: [AT commands guide](https://room-15.github.io/blog/2015/03/26/esp8266-at-command-reference/) 
 
 A good response looks like this. 
-<img src="./Resources/ATOK.PNG" alt="Image of a good response" width="300" align="middle">
+<img src="./Resources/ATOK.png" alt="Image of a good response" width="300" align="middle">
 If you are only getting back garbage values like seen here. 
-<img src="./Resources/WrongBaudrate.PNG" alt="Image of a garbage response" width="300" align="middle">
+<img src="./Resources/WrongBaudrate.png" alt="Image of a garbage response" width="300" align="middle">
 
 Some extra hardware will be needed. For our use case, a FTDI programmer was used. There are other methods to configure the ESP, but we will only be looking at the FTDI one. 
 
@@ -183,11 +183,11 @@ With the FTDI it is possible to connect the ESP directly to a pc, and issue comm
 
 When the ESP is connected to your pc through you FTDI, it is possible to communicate with the device. This can be done with your preferred serial terminal program, *E.G.* Putty, Termite, Minicom. To name a few. It is also possible to use the arduino serial monitor. The only parameter you need to know is the serial port with which the ESP is connected and the baud rate. 
 The serial port can be found in the Arduino IDE, under the `tools section`,
-<img src="./Resources/ChoosePort.PNG" alt="Image of Arduino choose port" width="300" align="middle">
+<img src="./Resources/ChoosePort.png" alt="Image of Arduino choose port" width="300" align="middle">
 or in the `device manager` (Windows),
-<img src="./Resources/DeviceManager.PNG" alt="Image of device manager" width="300" align="middle">
+<img src="./Resources/DeviceManager.png" alt="Image of device manager" width="300" align="middle">
 `System Information` (OSX)
-<img src="./Resources/SystemInformation.PNG" alt="Image of System Information" width="300" align="middle">
+<img src="./Resources/SystemInformation.png" alt="Image of System Information" width="300" align="middle">
 
 
 The different baud rates can be tried until one that works is found (which will probably be 115200).
