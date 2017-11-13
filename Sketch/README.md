@@ -1,21 +1,101 @@
 # Wifi Localization sketch
----
+
 The sketch is built upon the use of the following hardware and components:
 
 * Sodaq Explorer
 * ESP8266-01
-* FTDI usb to serial
+* [*FTDI USB to TTL logic*](https://www.amazon.com/HiLetgo-FT232RL-Converter-Adapter-Breakout/dp/B00IJXZQ7C/ref=pd_lpo_vtph_147_lp_img_3/131-9012372-9811114?_encoding=UTF8&psc=1&refRID=PH0S6PBC54E7YFZYEKZD)
 * Breadboard
-* 2-3 Resistors
-* A couple of male-female and male-male wires. 
+* 2 Resistors (1K and 2K)
+* 4 male-female and 4 male-male wires. 
+
+*note*: It is also possible to use this [*adapter board*](https://www.amazon.com/ESP8266-Wireless-Adapter-Compatible-Arduino/dp/B01M09B43H), instead of using a breadboard and resistors. Because there is a onboard regulator on the board 5 V has to be used to power the board.
+
 
 ### Index
 ---
+* Hookup guide
 * Important values/calculations
 * Flow of the program
 * Functions
-* Hookup guide
 
+### Hookup guide
+---
+##### **Safety**
+It is not wise to connect the ESP module directly to the Explorer, as the ESP module is a 3.3 V device and the Explorer is a 5 V device. By doing so the ESP could get irreversibly damaged. The Explorer board has a 3.3 V pin so this can be used to power the ESP, but the TX pin swings between 0-5 V.
+There are two main methods to make it safer. The first is using a resistor divider network to adjust the 5 V of the TX pin. The second method involves another component, called a level shifter. There are small boards with level shifters chips on it, that can be order from a variety of places. As the first method will do the job just fine, we will be using this for simplicity’s sake.
+
+<img src="../Resources/sodaq-esp-connection" alt="Temporary image sodaq-esp" width="700" align="middle">
+
+For the resistor values you can take a multitude of values, as long as the second resistor has double the value as the first resistor. *E.G.*. 1K and 2K.
+By connecting the Explorer and ESP this way it is possible to communicate in a safe fashion.
+
+##### **Communication**
+
+Now the safety is taken care off, the next step is actually communicating with the device. To be able to communicate with the ESP module, it is necessary to set the correct baud rate.If the ESP module comes preconfigured with a baud rate of 115200, it is not possible to configure the module with the explorer board. As the serials ports of the explorer only go up to 57600. 
+
+A way to find out the baud rate of the module is to try an edited passthrough sketch from the TTN library. 
+
+``` 
+#define debugSerial SerialUSB
+#define espSerial Serial // D0 & D1
+
+void setup()
+{
+  while (!debugSerial);
+
+  debugSerial.begin(9600);
+/*
+possible baud rates to try: 9600, 19200, 38400, 57600. Don’t forget to change the baud rate in the serial monitor accordingly
+*/
+  delay(500);
+  espSerial.begin (9600); 
+ 
+  debugSerial.println(F("Check if the communication with your ESP module is working by entering the following command 'AT'. Response should be ‘OK’ "));
+  debugSerial.println(F("Check the baudrate of your ESP module by entering the following command 'AT+CIOBAUD?' "));
+}
+
+void loop()
+{
+  while (debugSerial.available())
+  {
+    espSerial.write(debugSerial.read());
+  }
+  while (espSerial.available())
+  {
+    debugSerial.write(espSerial.read());
+  }
+}
+```
+There are allot of ‘AT’ commands you can send to the device, to configure or check settings. A good reference guide can be found here: [AT commands guide](https://room-15.github.io/blog/2015/03/26/esp8266-at-command-reference/) 
+
+A good response looks like this. 
+
+<img src="../Resources/ATOK.png" alt="Image of a good response" width="500" align="middle">
+
+If you are only getting back garbage values like seen here. 
+
+<img src="../Resources/WrongBaudrate.png" alt="Image of a garbage response" width="500" align="middle">
+
+Some extra hardware will be needed. For our use case, a FTDI programmer was used. There are other methods to configure the ESP. Like connecting with it through an [*arduino*](http://www.martyncurrey.com/arduino-to-esp8266-serial-commincation/), but we will only be looking at the FTDI one. 
+
+With the FTDI it is possible to connect the ESP directly to a pc, and issue commands.  
+
+When the ESP is connected to your pc through you FTDI, it is possible to communicate with the device. This can be done with your preferred serial terminal program, *E.G.* Putty, Termite, Minicom. To name a few. It is also possible to use the arduino serial monitor. The only parameter you need to know is the serial port with which the ESP is connected and the baud rate. 
+The serial port can be found in the Arduino IDE, under the `tools section`,
+
+<img src="../Resources/ChoosePort.png" alt="Image of Arduino choose port" width="300" align="middle">
+
+or in the `device manager` (Windows),
+
+<img src="../Resources/DeviceManager.png" alt="Image of device manager" width="300" align="middle">
+
+`System Information` (OSX)
+
+<img src="../Resources/SystemInformation.png" alt="Image of System Information" width="300" align="middle">
+
+
+The different baud rates can be tried until one that works is found (which will probably be 115200).
 
 ### Important values/calculations
 ---
@@ -59,7 +139,7 @@ The above declarations are another important part of the code. They define the n
 * The fourth token is the Bssid.
 * The fourth token is then proofed, if this is successful the Bssid is put into an array.
 * This is done by using the ` HEX_PAIR_TO_BYTE`.
-* If all the Bssid’s have been collected, the array is put into the payload array through the `sendBssid`   function.
+* If all the Bssid’s have been collected, the array is put into the payload array through the `sendBssid` function.
 * The payload is sent to the console and after a delay of a minute everything is repeated.
 
 ### Functions
@@ -121,87 +201,3 @@ void sendBssid()
 }
 ```
 The `sendBssid` function is used to send the collected Bssid’s over LoRa to the TTN console. By going through two for loops it fills out the payload with the `bssidByte` at the right places.
-
-### Hookup guide
----
-##### **Safety**
-It is not wise to connect the ESP module directly to the Explorer, as the ESP module is a 3.3 V device and the Explorer is a 5 V device. By doing so the ESP could get irreversibly damaged. The Explorer board has a 3.3 V pin so this can be used to power the ESP, but the TX pin swings between 0-5 V.
-There are two main methods to make it safer. The first is using a resistor divider network to adjust the 5 V of the TX pin. The second method involves another component, called a level shifter. There are small boards with level shifters on it, that can be order from a variety of places. As the first method will do the job just fine, we will be using this for simplicity’s sake.
-
-[Graphic: explorer -> esp]
-
-For the resistor values you can take a multitude of values, as long as the second resistor has double the value as the first resistor. *E.G.*. 1K and 2K.
-By connecting the Explorer and ESP this way it is possible to communicate in a safe fashion.
-
-##### **Communication**
-
-Now the safety is taken care off, the next step is actually communicating with the device. To be able to communicate with the ESP module, it is necessary to set the correct baud rate. If the ESP module comes preconfigured with a baud rate of 115200, it is not possible to configure the module with explorer board. As the serials ports of the explorer only go up to 57600. 
-
-A way to find out the baud rate of the module is to try an edited passthrough sketch from the TTN library. 
-
-``` 
-#define debugSerial SerialUSB
-#define espSerial Serial // D0 & D1
-
-void setup()
-{
-  while (!debugSerial);
-
-  debugSerial.begin(9600);
-/*
-possible baud rates to try: 9600, 19200, 38400, 57600. Don’t forget to change the baud rate in the serial monitor accordingly
-*/
-  delay(500);
-  espSerial.begin (9600); 
- 
-  debugSerial.println(F("Check if the communication with your ESP module is working by entering the following command 'AT'. Response should be ‘OK’ "));
-  debugSerial.println(F("Check the baudrate of your ESP module by entering the following command 'AT+CIOBAUD?' "));
-}
-
-void loop()
-{
-  while (debugSerial.available())
-  {
-    espSerial.write(debugSerial.read());
-  }
-  while (espSerial.available())
-  {
-    debugSerial.write(espSerial.read());
-  }
-}
-```
-There are allot of ‘AT’ commands you can send to the device, to configure or check settings. A good reference guide can be found here: [AT commands guide](https://room-15.github.io/blog/2015/03/26/esp8266-at-command-reference/) 
-
-A good response looks like this. 
-
-<img src="../Resources/ATOK.png" alt="Image of a good response" width="300" align="middle">
-
-If you are only getting back garbage values like seen here. 
-
-<img src="../Resources/WrongBaudrate.png" alt="Image of a garbage response" width="300" align="middle">
-
-Some extra hardware will be needed. For our use case, a FTDI programmer was used. There are other methods to configure the ESP, but we will only be looking at the FTDI one. 
-
-With the FTDI it is possible to connect the ESP directly to a pc, and issue commands. The following FTDI was used: [*FTDI FT232RL USB to TTL*](https://www.amazon.com/HiLetgo-FT232RL-Converter-Adapter-Breakout/dp/B00IJXZQ7C/ref=pd_lpo_vtph_147_lp_img_3/131-9012372-9811114?_encoding=UTF8&psc=1&refRID=PH0S6PBC54E7YFZYEKZD) 
-
-When the ESP is connected to your pc through you FTDI, it is possible to communicate with the device. This can be done with your preferred serial terminal program, *E.G.* Putty, Termite, Minicom. To name a few. It is also possible to use the arduino serial monitor. The only parameter you need to know is the serial port with which the ESP is connected and the baud rate. 
-The serial port can be found in the Arduino IDE, under the `tools section`,
-
-<img src="../Resources/ChoosePort.png" alt="Image of Arduino choose port" width="300" align="middle">
-
-or in the `device manager` (Windows),
-
-<img src="../Resources/DeviceManager.png" alt="Image of device manager" width="300" align="middle">
-
-`System Information` (OSX)
-
-<img src="../Resources/SystemInformation.png" alt="Image of System Information" width="300" align="middle">
-
-
-The different baud rates can be tried until one that works is found (which will probably be 115200).
-
-##### TODO
----
-* Remove redundant Bssid’s
-* Add signal strength sorting (char *signalSort(buffer[] enter it after the readline)
-* Make the payload function scalable 
