@@ -32,9 +32,9 @@ By connecting the Explorer and ESP this way it is possible to communicate in a s
 
 ##### **Communication**
 
-Now the safety is taken care off, the next step is actually communicating with the device. To be able to communicate with the ESP module, it is necessary to set the correct baud rate.If the ESP module comes preconfigured with a baud rate of 115200, it is not possible to configure the module with the explorer board. As the serials ports of the explorer only go up to 57600. 
+Now the safety is taken care off, the next step is actually communicating with the device. To be able to communicate with the ESP module, it is necessary to set the correct baud rate.If the ESP module comes preconfigured with a baud rate of 115200, it is not possible to configure the module with the explorer board. As the serial ports of the explorer only go up to 57600. 
 
-A way to find out the baud rate of the module is to try an edited passthrough sketch from the TTN library. 
+A way to find out the baud rate of the module, is to try an edited passthrough sketch from the TTN library. 
 
 ``` 
 #define debugSerial SerialUSB
@@ -45,12 +45,11 @@ void setup()
   while (!debugSerial);
 
   debugSerial.begin(9600);
-/*
-possible baud rates to try: 9600, 19200, 38400, 57600. Don’t forget to change the baud rate in the serial monitor accordingly
-*/
+
   delay(500);
-  espSerial.begin (9600); 
- 
+  espSerial.begin (9600); //Possible baud rates to try: 9600, 19200, 38400, 57600. Don’t forget to change the baud rate in the serial monitor accordingly
+
+  
   debugSerial.println(F("Check if the communication with your ESP module is working by entering the following command 'AT'. Response should be ‘OK’ "));
   debugSerial.println(F("Check the baudrate of your ESP module by entering the following command 'AT+CIOBAUD?' "));
 }
@@ -78,22 +77,27 @@ If you are only getting back garbage values like seen here.
 <img src="../Resources/WrongBaudrate.png" alt="Image of a garbage response" width="500" align="middle">
 
 Some extra hardware will be needed. For our use case, a FTDI programmer was used. There are other methods to configure the ESP. Like connecting with it through an [*arduino*](http://www.martyncurrey.com/arduino-to-esp8266-serial-commincation/), but we will only be looking at the FTDI one. 
+*NOTE: It is worth mentioning that if the baudrate is indeed 115200 the example used with the arduino is not going to work, as it is using the softserial library, which can only go up to 57600. 
+A work around would be to use a mega which has multiple hardware serials, which can handle the 115200 baudrate.*
 
-With the FTDI it is possible to connect the ESP directly to a pc, and issue commands.  
+With the FTDI it is possible to connect the ESP directly to a pc, and issue commands. 
 
-When the ESP is connected to your pc through you FTDI, it is possible to communicate with the device. This can be done with your preferred serial terminal program, *E.G.* Putty, Termite, Minicom. To name a few. It is also possible to use the arduino serial monitor. The only parameter you need to know is the serial port with which the ESP is connected and the baud rate. 
+Here is how you connect the FTDI:
+ 
+<img src="../Resources/FDTI-to-ESP.png" alt="FTDI hookup" width="700" align="middle">
+ 
+When the ESP is connected to your pc through your FTDI, it is possible to communicate with the device. This can be done with your preferred serial terminal program, *E.G.* Putty, Termite, Minicom. To name a few. 
+It is also possible to use the arduino serial monitor. The only parameter you need to know is the serial port with which the ESP is connected and the baud rate. 
 The serial port can be found in the Arduino IDE, under the `tools section`,
 
 <img src="../Resources/ChoosePort.png" alt="Image of Arduino choose port" width="300" align="middle">
 
-or in the `device manager` (Windows),
+or in the `device manager` (Windows)
 
 <img src="../Resources/DeviceManager.png" alt="Image of device manager" width="300" align="middle">
 
-`System Information` (OSX)
-
-<img src="../Resources/SystemInformation.png" alt="Image of System Information" width="300" align="middle">
-
+On Mac the easiest way is to open up the terminal and type in the following command: ```ls /dev/cu.*```.
+this should list the ports available.
 
 The different baud rates can be tried until one that works is found (which will probably be 115200).
 
