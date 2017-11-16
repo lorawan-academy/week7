@@ -22,17 +22,18 @@ The sketch is built upon the use of the following hardware and components:
 ### Hookup guide
 ---
 ##### **Safety**
-It is not wise to connect the ESP module directly to the Explorer, as the ESP module is a 3.3 V device and the Explorer is a 5 V device. By doing so the ESP could get irreversibly damaged. The Explorer board has a 3.3 V pin so this can be used to power the ESP, but the TX pin swings between 0-5 V.
+It is not recommended to connect the ESP module directly to the ExpLoRer as the ESP module needs 3.3 V device and the output voltage of the ExpLoRer is a 5 V (when connected to your laptop). When using 5V for too long, the ESP can get irreversibly damaged. The ExpLoRer board has a 3.3 V pin so this can be used to power the ESP, but the TX pin swings between 0-5 V.
 There are two main methods to make it safer. The first is using a resistor divider network to adjust the 5 V of the TX pin. The second method involves another component, called a level shifter. There are small boards with level shifters chips on it, that can be order from a variety of places. As the first method will do the job just fine, we will be using this for simplicity’s sake.
 
 <img src="../Resources/sodaq-esp-connection.png" alt="Temporary image sodaq-esp" width="700" align="middle">
 
 For the resistor values you can take a multitude of values, as long as the second resistor has double the value as the first resistor. *E.G.*. 1K and 2K.
-By connecting the Explorer and ESP this way it is possible to communicate in a safe fashion.
+By connecting the ExpLoRer and the ESP in this way, we can communicate safely.
 
 ##### **Communication**
+ 
+Let's start communicating with the device. To be able to communicate with the ESP module, it is necessary to set the correct baud rate. It is likely that the ESP module you are using comes preconfigured with a baud rate of 115200. It is however not possible to configure the module with the ExpLoRer board as the serials ports of the explorer only go up to 57600. 
 
-Now the safety is taken care off, the next step is actually communicating with the device. To be able to communicate with the ESP module, it is necessary to set the correct baud rate.If the ESP module comes preconfigured with a baud rate of 115200, it is not possible to configure the module with the explorer board. As the serial ports of the explorer only go up to 57600. 
 
 A way to find out the baud rate of the module, is to try an edited passthrough sketch from the TTN library. 
 
@@ -192,13 +193,13 @@ void sendBssid()
   byte payload[payloadLength];
   uint8_t payloadByte = 0;
   
-  for(bssidNumber = 0; bssidNumber < ACCESS_POINTS; bssidNumber++)
-  {
-    for(bssidByte = 0; bssidByte < SF_WIFI_BSSID_SIZE; bssidByte++, payloadByte++)
-    {
+	for(bssidNumber = 0; bssidNumber < ACCESS_POINTS; bssidNumber++)
+	{
+	  for(bssidByte = 0; bssidByte < SF_WIFI_BSSID_SIZE; bssidByte++, payloadByte++)
+      {
       payload[payloadByte]= aps[bssidNumber][bssidByte];
+      }
     }
-  }
 
   ttn.sendBytes(payload, sizeof(payload));
   delay(60000);
