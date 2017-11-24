@@ -51,7 +51,7 @@ var macAddress1 = ""
 var macAddress2 = ""
 var macAddress3 = ""
 ```
-You will need to ask for a Google Maps API key to use Google Maps api: https://developers.google.com/maps/documentation/geocoding/get-api-key?hl=fr#key
+You will need to ask for a Google Maps API key to use Google Maps api: https://developers.google.com/maps/documentation/geocoding/get-api-key?hl=en#key
 
 To start the server, we can add the lines:
 
