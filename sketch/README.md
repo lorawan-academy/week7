@@ -21,7 +21,7 @@ The sketch is built upon the use of the following hardware and components:
 
 The Sodaq ExpLoRer is a development board that has a potential of 3.3 volts on all pins except (ofcourse) the 5 volt pin. So it is possible to connect the esp directly to the Sodaq board. The wiring can be seen in the image down below. 
 
-<img src="../Resources/sodaq-esp-connection.png" alt="Temporary image sodaq-esp" width="700" align="middle">
+<img src="resources/sodaq-esp-connection.png" alt="Temporary image sodaq-esp" width="700" align="middle">
 
 ##### **Communication**
 
@@ -66,11 +66,11 @@ There are allot of ‘AT’ commands you can send to the device, to configure or
 
 A good response looks like this.
 
-<img src="../Resources/ATOK.png" alt="Image of a good response" width="1000" align="middle">
+<img src="resources/ATOK.png" alt="Image of a good response" width="1000" align="middle">
 
 If you are only getting back garbage values, like seen here.
 
-<img src="../Resources/WrongBaudrate.png" alt="Image of a garbage response" width="1000" align="middle">
+<img src="resources/WrongBaudrate.png" alt="Image of a garbage response" width="1000" align="middle">
 
 Some extra hardware will be needed. For our use case, a FTDI programmer was used. There are other methods to configure the ESP. Like comunicate with it through an [*arduino*](http://www.martyncurrey.com/arduino-to-esp8266-serial-commincation/), but we will only be looking at the FTDI one. 
 
@@ -81,17 +81,17 @@ With the FTDI it is possible to connect the ESP directly to a pc, and issue comm
 
 Here is how you connect the FTDI:
  
-<img src="../Resources/FDTI-to-ESP.png" alt="FTDI hookup" width="700" align="middle">
+<img src="resources/FDTI-to-ESP.png" alt="FTDI hookup" width="700" align="middle">
  
 When the ESP is connected to your pc through your FTDI, it is possible to communicate with the device. This can be done with your preferred serial terminal program, *E.G.* Putty, Termite, Minicom. To name a few. 
 It is also possible to use the arduino serial monitor. The only parameter you need to know is the serial port with which the ESP is connected and the baud rate. 
 The serial port can be found in the Arduino IDE, under the `tools section`,
 
-<img src="../Resources/ChoosePort.png" alt="Image of Arduino choose port" width="300" align="middle">
+<img src="resources/ChoosePort.png" alt="Image of Arduino choose port" width="300" align="middle">
 
 or in the `device manager` (Windows)
 
-<img src="../Resources/DeviceManager.png" alt="Image of device manager" width="300" align="middle">
+<img src="resources/DeviceManager.png" alt="Image of device manager" width="300" align="middle">
 
 On Mac the easiest way is to open up the terminal and type in the following command: ```ls /dev/cu.*```.
 this should list the ports available.
