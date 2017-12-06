@@ -109,7 +109,7 @@ In the above define you fill in the baud rate you set before.
 
 `#define WAIT_TO_SEND 300000`
 
-The above declarations are another important part of the code. They define the number of Bssid's that are scanned for. By changing the value of `ACCESS_POINTS` you can scan for more Bssid's. And the `WAIT_TO_SEND` sets the amount of time in between scan cycles.
+The above declarations are another important part of the code. They define the number of bssid's that are scanned for. By changing the value of `ACCESS_POINTS` you can scan for more bssid's. And the `WAIT_TO_SEND` sets the amount of time in between scan cycles.
 
 
 ### Flow of the program
@@ -121,10 +121,10 @@ The above declarations are another important part of the code. They define the n
 * The `readLine` function is then called, see the chapter: *Functions* for more information.
 * When the string comes back, it checks if there is a valid response. Which is `+CWLAP`
 * The string is then further processed. By breaking it in smaller tokens.
-* The fourth token is the Bssid.
-* The fourth token is then proofed, if this is successful the Bssid is put into an array.
+* The fourth token is the bssid.
+* The fourth token is then proofed, if this is successful the bssid is put into an array.
 * This is done by using the `HEX_PAIR_TO_BYTE`.
-* If all the Bssid’s have been collected, the array is put into the payload array through the `sendBssid` function.
+* If all the bssid’s have been collected, the array is put into the payload array through the `sendBssid` function.
 * The payload is sent to the console and after a delay of 5 minutes everything is repeated.
 
 ### Functions
@@ -175,15 +175,12 @@ void sendBssid(byte aps[][WIFI_BSSID_SIZE])
 {
   byte payload[ACCESS_POINTS * WIFI_BSSID_SIZE];
   uint8_t payloadByte = 0;
-  for (int bssidNumberCount = 0; bssidNumberCount < ACCESS_POINTS; bssidNumberCount++)
+  for (int i = 0; i < ACCESS_POINTS; i++)
   {
-    for (int bssidByte = 0; bssidByte < WIFI_BSSID_SIZE; bssidByte++, payloadByte++)
-    {
-      payload[payloadByte] = aps[bssidNumberCount][bssidByte];
-    }
+    memcpy(payload, aps, 6);
   }
   ttn.sendBytes(payload, sizeof(payload));
 }
 ```
 
-The `sendBssid` function is used to send the collected Bssid’s over LoRa to the TTN console. By going through two, for loops it fills out the payload with the `bssidByte` at the right places.
+The `sendBssid` function is used to send the collected bssid’s over LoRa to the TTN console. By going through the for loop it copies the bssid into the payload.
