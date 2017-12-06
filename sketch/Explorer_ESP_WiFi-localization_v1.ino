@@ -26,8 +26,7 @@ const char *appKey = "00000000000000000000000000000000";
 // TTN constructor
 TheThingsNetwork ttn(loraSerial, debugSerial, FREQPLAN);
 
-// Function used to see if the ESP module sends back a valid response
-bool waitForOK(uint32_t waitTime, char buffer[])
+bool waitForOKFromESP(uint32_t waitTime, char buffer[])
 {
   uint32_t timeout = millis() + waitTime;
   while (millis() < timeout)
@@ -42,8 +41,7 @@ bool waitForOK(uint32_t waitTime, char buffer[])
   return false;
 }
 
-// Function used to read out the stream from the ESP module
-char *readLine(uint32_t waitTime, char buffer[])
+char *readLineFromESP(uint32_t waitTime, char buffer[])
 {
   uint32_t timeout = millis() + waitTime;
   while (millis() < timeout)
@@ -97,7 +95,7 @@ void loop()
 
   // command to esp, set station mode
   espSerial.println(F("AT+CWMODE=1"));
-  bool ok = waitForOK(ESP8266_DEFAULT_WAIT, buffer);
+  bool ok = waitForOKFromESP(ESP8266_DEFAULT_WAIT, buffer);
 
   if (!ok)
   {
@@ -113,8 +111,8 @@ void loop()
   timeout = millis() + 3000;
   while (millis() < timeout && bssidCount < ACCESS_POINTS)
   {
-    previousLine = readLine(ESP8266_DEFAULT_WAIT, buffer);
-    line = readLine(ESP8266_DEFAULT_WAIT, buffer);
+    previousLine = readLineFromESP(ESP8266_DEFAULT_WAIT, buffer);
+    line = readLineFromESP(ESP8266_DEFAULT_WAIT, buffer);
     debugSerial.println(line);
     if (strncmp("OK", line, 2) == 0 || strncmp("OK", previousLine, 2) == 0)
     {
