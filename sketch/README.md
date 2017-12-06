@@ -115,10 +115,10 @@ The above declarations are another important part of the code. They define the n
 ### Flow of the program
 ---
 * At the start of the loop a connection with the ESP is tested. The explorer sets the ESP into host mode with the following command: `AT+CWMODE=1` .
-* If the connection is not working. It retries until it does. The `waitForOK` function is used for this, see the chapter: *Functions* for more information.
+* If the connection is not working. It retries until it does. The `waitForOKFromESP` function is used for this, see the chapter: *Functions* for more information.
 * When a connection is confirmed it continues and sends the command to scan for WiFi networks `AT+CWLAP`.
 * Then it stays in a loop as long as `millis() < timeout && bssidNumber < ACCESS_POINTS` is true.
-* The `readLine` function is then called, see the chapter: *Functions* for more information.
+* The `readLineFromESP` function is then called, see the chapter: *Functions* for more information.
 * When the string comes back, it checks if there is a valid response. Which is `+CWLAP`
 * The string is then further processed. By breaking it in smaller tokens.
 * The fourth token is the bssid.
@@ -129,10 +129,10 @@ The above declarations are another important part of the code. They define the n
 
 ### Functions
 ---
-The following functions are used in the sketch: `WaitForOK`, `readLine`, `sendBssid`.
+The following functions are used in the sketch: `WaitForOK`, `readLineFromESP`, `sendBssid`.
 
 ```Arduino
-bool waitForOK(uint32_t waitTime, char buffer[])
+bool waitForOKFromESP(uint32_t waitTime, char buffer[])
 {
   uint32_t timeout = millis() + waitTime;
   while (millis() < timeout)
@@ -148,10 +148,10 @@ bool waitForOK(uint32_t waitTime, char buffer[])
 }
 ```
 
-The `waitForOK` function is used at the start of the loop to check if the communication with the ESP is up and running. It puts the data that is sent by the ESP in a buffer which is then checked if it contains the *OK* string by using the `strncmp` function. At the very end of a response, from the ESP these two characters are always present. So, these make a good end marker.
+The `waitForOKFromESP` function is used at the start of the loop to check if the communication with the ESP is up and running. It puts the data that is sent by the ESP in a buffer which is then checked if it contains the *OK* string by using the `strncmp` function. At the very end of a response, from the ESP these two characters are always present. So, these make a good end marker.
 
 ```Arduino
-char *readLine(uint32_t waitTime, char buffer[])
+char *readLineFromESP(uint32_t waitTime, char buffer[])
 {
   uint32_t timeout = millis() + waitTime;
   while (millis() < timeout)
@@ -168,7 +168,7 @@ char *readLine(uint32_t waitTime, char buffer[])
 }
 ```
 
-The `readLine` function is similar to the `waitForOk` function. The biggest difference being the return of the buffer, instead of checking it in the function. The buffer is returned because the string that is sent from the ESP this time contains the information we need for the Wifi-localization.
+The `readLineFromESP` function is similar to the `waitForOk` function. The biggest difference being the return of the buffer, instead of checking it in the function. The buffer is returned because the string that is sent from the ESP this time contains the information we need for the Wifi-localization.
 
 ```Arduino
 void sendBssid(byte aps[][WIFI_BSSID_SIZE])
