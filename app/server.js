@@ -4,16 +4,13 @@ const http = require("http").Server(app);
 const bodyParser = require("body-parser");
 
 const googleMapsClient = require("@google/maps").createClient({
-  key: "xxxxxxxxxxxxxxxxxxxxxx"
+  key: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 });
 
-var appID = "xxxxxxxxxxxxx";
-var accessKey = "ttn-account-v2.xxxxxxxxxxxxxxxxxxxxxx";
+var appID = "xxxxxxxxxxxxxxxxx";
+var accessKey = "ttn-account-v2.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
 
-var address = "";
-var wifibssids = [];
-
-var setAddresses = false;
+var wifiAccessPointsAddresses = [];
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -27,7 +24,7 @@ app.get("/generator", function(req, res) {
   googleMapsClient.geolocate(
     {
       considerIp: false,
-      wifiAccessPoints: wiFiBssids
+      wifiAccessPoints: wifiAccessPointsAddresses
     },
     function(err, response) {
       if (err) {
@@ -44,25 +41,21 @@ app.get("/generator", function(req, res) {
 ttn
   .data(appID, accessKey)
   .then(function(client) {
-    //on uplink messages
     client.on("uplink", function(devID, payload) {
-      //print the message in the console
-      if (setAddresses == false) {
-        console.log("Received uplink from ", devID);
-        console.log(payload.payload_fields);
-        //iterate over each bssid discovered
-        for (var field in payload.payload_fields) {
-          address = payload.payload_fields[field];
-          //appends the bssid tab
-          wiFiBssids.push({
+      wifiAccessPointsAddresses = [];
+      console.log(payload.payload_fields);
+      //iterate over each field discovered
+      for (var field in payload.payload_fields) {
+        if (payload.payload_fields.hasOwnProperty(field)) {
+          var address = String(payload.payload_fields[field]);
+          //appends the wifiAccessPointsAddresses tab
+          wifiAccessPointsAddresses.push({
             macAddress: address
           });
         }
-        setAddresses = true;
       }
     });
   })
-  //Error handling
   .catch(function(error) {
     console.error("Error", error);
     process.exit(1);
