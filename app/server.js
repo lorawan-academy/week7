@@ -4,15 +4,14 @@ const http = require("http").Server(app);
 const bodyParser = require("body-parser");
 
 const googleMapsClient = require("@google/maps").createClient({
-  key: "xxxxxxxxxxxxxxxxxxxxxxxx"
+  key: "xxxxxxxxxxxxxxxxxxxxxx"
 });
 
-var appID = "xxxxxxxxxx";
-var accessKey = "ttn-account-v2.xxxxxxxxxxxxxxxxxxxxxxxx";
+var appID = "xxxxxxxxxxxxx";
+var accessKey = "ttn-account-v2.xxxxxxxxxxxxxxxxxxxxxx";
 
-var macAddress1 = "";
-var macAddress2 = "";
-var macAddress3 = "";
+var address = "";
+var wifibssids = [];
 
 var setAddresses = false;
 
@@ -28,17 +27,7 @@ app.get("/generator", function(req, res) {
   googleMapsClient.geolocate(
     {
       considerIp: false,
-      wifiAccessPoints: [
-        {
-          macAddress: macAddress1
-        },
-        {
-          macAddress: macAddress2
-        },
-        {
-          macAddress: macAddress3
-        }
-      ]
+      wifiAccessPoints: wiFiBssids
     },
     function(err, response) {
       if (err) {
@@ -58,12 +47,17 @@ ttn
     //on uplink messages
     client.on("uplink", function(devID, payload) {
       //print the message in the console
-      if (payload.payload_fields.bssid3 && setAddresses == false) {
+      if (setAddresses == false) {
         console.log("Received uplink from ", devID);
         console.log(payload.payload_fields);
-        macAddress1 = payload.payload_fields.bssid1;
-        macAddress2 = payload.payload_fields.bssid2;
-        macAddress3 = payload.payload_fields.bssid3;
+        //iterate over each bssid discovered
+        for (var field in payload.payload_fields) {
+          address = payload.payload_fields[field];
+          //appends the bssid tab
+          wiFiBssids.push({
+            macAddress: address
+          });
+        }
         setAddresses = true;
       }
     });
