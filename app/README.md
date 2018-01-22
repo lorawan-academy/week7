@@ -78,14 +78,14 @@ Our web server is now running on **port 8000**, you can access it by going to [h
     <h3>Geolocation integration</h3>
     <div id="map"></div>
     <script async defer
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDvG9inIBgoXyFWZAhZqyzyJub_7VXsl8c&callback=initMap">
+    src="https://maps.googleapis.com/maps/api/js?key=xxxxxxxxxxxxxxxxxxx&callback=initMap">
     </script>
     <script src="http://code.jquery.com/jquery-2.0.3.min.js"></script>
   </body>
 </html>
 ```
 
-You can see a division called map which will contain our embeded Google map. And then you can find the scripts we need to include to create later on, our map.
+You can see a division called map which will contain our embedded Google map. And then you can find the scripts we need to include to create later on, our map.
 
 Let's launch the server from the command line and see what happens:
 
@@ -124,17 +124,16 @@ ttn
     client.on("uplink", function(devID, payload) {
       wifiAccessPointsAddresses = [];
       console.log(payload.payload_fields);
-      //iterate over each field discovered
-      for (var field in payload.payload_fields) {
-        if (payload.payload_fields.hasOwnProperty(field)) {
-        }
-        var address = String(payload.payload_fields[field]);
-        //appends the wifiAccessPointsAddresses tab
+      //iterate over the tab which contains the addresses
+      var arrayLength = payload.payload_fields.access_points.length;
+      for (var i = 0; i < arrayLength; i++) {
+        var address = payload.payload_fields.access_points[i].bssid;
+        var rssi = payload.payload_fields.access_points[i].rssi;
         wifiAccessPointsAddresses.push({
-          macAddress: address
+          macAddress: address,
+          signalStrength: rssi
         });
       }
-      console.log(wifiAccessPointsAddresses);
     });
   })
   .catch(function(error) {
@@ -146,7 +145,7 @@ http.listen(8080);
 ```
 
 Stop your server with `CTRL` + `C` if it was still running, save the changes to the server file and start the server again.
-As we wait for a bit, we should see the incomming messages from our board arrive with the 3 BSSID we are going to give to Google maps API so that I gives us back a location.
+As we wait for a bit, we should see the incomming messages from our board arrive with the 3 BSSID that we are going to provide to Google maps API so that it sends us back a location.
 Let's use the API in the `server.js` file and add this before the ttn client part of our code:
 
 ```js

@@ -4,11 +4,11 @@ const http = require("http").Server(app);
 const bodyParser = require("body-parser");
 
 const googleMapsClient = require("@google/maps").createClient({
-  key: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  key: "xxxxxxxxxxxxxxxxxxx"
 });
 
-var appID = "xxxxxxxxxxxxxxxxx";
-var accessKey = "ttn-account-v2.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
+var appID = "xxxxxxxxxxxx";
+var accessKey = "ttn-account-v2.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
 
 var wifiAccessPointsAddresses = [];
 
@@ -44,15 +44,15 @@ ttn
     client.on("uplink", function(devID, payload) {
       wifiAccessPointsAddresses = [];
       console.log(payload.payload_fields);
-      //iterate over each field discovered
-      for (var field in payload.payload_fields) {
-        if (payload.payload_fields.hasOwnProperty(field)) {
-          var address = String(payload.payload_fields[field]);
-          //appends the wifiAccessPointsAddresses tab
-          wifiAccessPointsAddresses.push({
-            macAddress: address
-          });
-        }
+      //iterate over the tab which contains the addresses
+      var arrayLength = payload.payload_fields.access_points.length;
+      for (var i = 0; i < arrayLength; i++) {
+        var address = payload.payload_fields.access_points[i].bssid;
+        var rssi = payload.payload_fields.access_points[i].rssi;
+        wifiAccessPointsAddresses.push({
+          macAddress: address,
+          signalStrength: rssi
+        });
       }
     });
   })
