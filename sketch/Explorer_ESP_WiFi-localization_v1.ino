@@ -4,10 +4,8 @@
 #define HEX_PAIR_TO_BYTE(h, l) ((HEX_CHAR_TO_NIBBLE(h) << 4) + HEX_CHAR_TO_NIBBLE(l))
 
 // Parameters for the esp stream/buffer
-#define ESP8266_DEFAULT_WAIT 5000
-#define ESP8266_BUFFER_SIZE 128
 #define ESP8266_SERIAL_SPEED 9600
-#define ACCESS_POINTS 3
+#define MAX_ACCESS_POINTS 3
 #define WIFI_BSSID_SIZE 6
 #define WAIT_TO_SEND 300000
 
@@ -16,7 +14,7 @@ const char *appEui = "0000000000000000";
 const char *appKey = "00000000000000000000000000000000";
 
 // Replace REPLACE_ME with TTN_FP_EU868 or TTN_FP_US915
-#define FREQPLAN TTN_FP_EU868
+#define FREQPLAN REPLACE_ME
 
 // Define the used serials
 #define debugSerial SerialUSB
@@ -26,47 +24,39 @@ const char *appKey = "00000000000000000000000000000000";
 // TTN constructor
 TheThingsNetwork ttn(loraSerial, debugSerial, FREQPLAN);
 
-bool waitForOKFromESP(uint32_t waitTime, char buffer[])
+// Access point data
+struct AP
 {
-  uint32_t timeout = millis() + waitTime;
-  while (millis() < timeout)
+  uint8_t bssid[WIFI_BSSID_SIZE];
+  int8_t rssi;
+};
+
+// Read OK response from ESP, ignoring echo (starting with AT+)
+bool waitForOKFromESP()
+{
+  char line[128];
+  size_t read;
+  while ((read = readLineFromESP(line, sizeof(line))) == 0 || strncmp("AT+", line, 3) == 0)
   {
-    uint8_t l = espSerial.readBytesUntil('\n', buffer, ESP8266_BUFFER_SIZE);
-    if (l > 0 && strncmp("OK", buffer, 2) == 0)
-    {
-      return true;
-    }
-    delay(1);
   }
-  return false;
+  return strncmp("OK", line, 2) == 0;
 }
 
-char *readLineFromESP(uint32_t waitTime, char buffer[])
+// Read line from ESP
+size_t readLineFromESP(char *buffer, size_t size)
 {
-  uint32_t timeout = millis() + waitTime;
-  while (millis() < timeout)
+  size_t read = 0;
+  while ((read = espSerial.readBytesUntil('\n', buffer, size)) == 0)
   {
-    uint8_t l = espSerial.readBytesUntil('\n', buffer, ESP8266_BUFFER_SIZE);
-    if (l > 0)
-    {
-      buffer[l - 1] = '\0';
-      return buffer;
-    }
-    delay(1);
   }
-  return NULL;
+  buffer[read - 1] = '\0';
+  return read - 1;
 }
 
-// Function used to send out the collected bssid's over LoRa
-void sendBssid(byte aps[][WIFI_BSSID_SIZE])
+// Send out the collected access points to The Things Network
+void sendAPs(AP aps[], int count)
 {
-  byte payload[ACCESS_POINTS * WIFI_BSSID_SIZE];
-  uint8_t payloadByte = 0;
-  for (int i = 0; i < ACCESS_POINTS; i++)
-  {
-    memcpy(payload, aps, 6);
-  }
-  ttn.sendBytes(payload, sizeof(payload));
+  ttn.sendBytes((uint8_t *)aps, count * sizeof(AP));
 }
 
 void setup()
@@ -76,7 +66,7 @@ void setup()
     ;
 
   loraSerial.begin(57600);
-  debugSerial.begin(ESP8266_SERIAL_SPEED);
+  debugSerial.begin(9600);
   espSerial.begin(ESP8266_SERIAL_SPEED);
 
   debugSerial.println("-- STATUS");
@@ -84,72 +74,76 @@ void setup()
 
   debugSerial.println("-- JOIN");
   ttn.join(appEui, appKey);
+
+  // Set ESP in station mode
+  espSerial.println(F("AT+CWMODE=1"));
+  if (!waitForOKFromESP())
+  {
+    debugSerial.println(F("Set mode failed! Check if wires are connected the right way"));
+    delay(UINT32_MAX);
+  }
 }
 
 void loop()
 {
-  uint8_t bssidCount = 0;
-  uint32_t timeout;
-  char buffer[ESP8266_BUFFER_SIZE];
-  byte aps[ACCESS_POINTS][WIFI_BSSID_SIZE];
+  uint8_t count = 0;
+  AP aps[MAX_ACCESS_POINTS];
+  char line[128];
+  size_t read;
 
-  // command to esp, set station mode
-  espSerial.println(F("AT+CWMODE=1"));
-  bool ok = waitForOKFromESP(ESP8266_DEFAULT_WAIT, buffer);
-
-  if (!ok)
+  // Send command to list access points to ESP
+  espSerial.println(F("AT+CWLAP"));
+  read = readLineFromESP(line, sizeof(line));
+  if (strncmp("AT+CWLAP", line, 8) != 0)
   {
-    debugSerial.println(F("Set mode failed! Check if wires are connected the right way"));
+    debugSerial.print("ESP did not respond with command echo, expecting AT+CWLAP but got: ");
+    debugSerial.println(line);
     goto exit;
   }
 
-  // Command to esp to get accesspoint information
-  espSerial.println(F("AT+CWLAP"));
-
-  char *line;
-  char *previousLine;
-  timeout = millis() + 3000;
-  while (millis() < timeout && bssidCount < ACCESS_POINTS)
+  readLineFromESP(line, sizeof(line));
+  while (strncmp("OK", line, 2) != 0)
   {
-    previousLine = readLineFromESP(ESP8266_DEFAULT_WAIT, buffer);
-    line = readLineFromESP(ESP8266_DEFAULT_WAIT, buffer);
     debugSerial.println(line);
-    if (strncmp("OK", line, 2) == 0 || strncmp("OK", previousLine, 2) == 0)
+    if (count == MAX_ACCESS_POINTS || strncmp("+CWLAP", line, 2) != 0)
     {
-      debugSerial.println(F("end of access points"));
-      break;
-    }
-    if (strncmp("+CWLAP", line, 2) != 0 && strncmp("+CWLAP", previousLine, 2) != 0)
-    {
-      delay(1);
-      debugSerial.println(F("No access points found"));
+      readLineFromESP(line, sizeof(line));
       continue;
     }
 
-    // Break the accesspoint in tokens, to get the bssid out.
+    // Parse the response line
     strtok(line, "\"");
     strtok(NULL, "\"");
-    strtok(NULL, "\"");
+    char *rssiStr = strtok(NULL, "\"") + 1;
+    rssiStr[strlen(rssiStr) - 1] = '\0';
+    int8_t rssi = atoi(rssiStr);
     char *bssid = strtok(NULL, "\"");
 
-    // Check if a valid bssid string has been found
+    // Check if a valid BSSID string has been found
     if (bssid && strlen(bssid) == WIFI_BSSID_SIZE * 3 - 1)
     {
-      debugSerial.print(F("Bssid: "));
+      debugSerial.print(F("RSSI: "));
+      debugSerial.println(rssi);
+      debugSerial.print(F("BSSID: "));
       debugSerial.println(bssid);
 
-      // putting the bssid into an array for easy access
+      aps[count].rssi = rssi;
+
+      // Put the BSSID into an array for easy access
       char *b = strtok(bssid, ":");
-      for (int bssidByte = 0; bssidByte < WIFI_BSSID_SIZE && b; bssidByte++, b = strtok(NULL, ":"))
+      for (int i = 0; i < WIFI_BSSID_SIZE && b; i++, b = strtok(NULL, ":"))
       {
-        aps[bssidCount][bssidByte] = HEX_PAIR_TO_BYTE(b[0], b[1]);
+        aps[count].bssid[i] = HEX_PAIR_TO_BYTE(b[0], b[1]);
       }
-      bssidCount++;
+      count++;
     }
+    readLineFromESP(line, sizeof(line));
   }
 
-  sendBssid(aps);
-  delay(WAIT_TO_SEND);
+  if (count > 0)
+  {
+    sendAPs(aps, count);
+  }
 exit:
-  debugSerial.println("Restart the loop");
+  delay(WAIT_TO_SEND);
 }
