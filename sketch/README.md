@@ -19,7 +19,7 @@ The sketch is built upon the use of the following hardware and components:
 ---
 ##### **Connecting the ExpLoRer**
 
-The Sodaq ExpLoRer is a development board that has a potential of 3.3 volts on all pins except on the 5 volt pin. So it is possible to connect the ESP directly to the Sodaq board. The wiring can be seen in the image down below. 
+The Sodaq ExpLoRer is a development board that has a potential of 3.3 volts on all pins except on the 5 volt pin. So it is possible to connect the ESP directly to the Sodaq board. The wiring can be seen in the image down below.
 
 <img src="resources/sodaq-esp-connection.png" alt="Temporary image sodaq-esp" width="700" align="middle">
 
@@ -44,7 +44,7 @@ void setup()
 
 	//Possible baud rates to try: 9600, 19200, 38400, 57600. Don’t forget to change the baud rate in the serial monitor accordingly
 	espSerial.begin(9600);
-	
+
 	debugSerial.println(F("Check if the communication with your ESP module is working by entering the following command 'AT'. Response should be ‘OK’ "));
 	debugSerial.println(F("Check the baud rate of your ESP module by entering the following command 'AT+CIOBAUD?' "));
 }
@@ -68,26 +68,25 @@ A good response looks like this.
 
 <img src="resources/ATOK.png" alt="Image of a good response" width="1000" align="middle">
 
-If you're seeing garbage values, the baud rate of the ESP module has to be set. 
+If you're seeing garbage values, the baud rate of the ESP module has to be set.
 
 <img src="resources/WrongBaudrate.png" alt="Image of a garbage response" width="1000" align="middle">
 
 
 ## Set ESP's Baud Rate
 
-To set the baud rate some extra hardware is needed to set the baud rate. For our use case, an [FTDI](https://www.amazon.com/HiLetgo-FT232RL-Converter-Adapter-Breakout/dp/B00IJXZQ7C/ref=pd_lpo_vtph_147_lp_img_3/131-9012372-9811114?_encoding=UTF8&psc=1&refRID=PH0S6PBC54E7YFZYEKZD) programmer can be used. 
+To set the baud rate some extra hardware is needed. For our use case, an [FTDI](https://www.amazon.com/HiLetgo-FT232RL-Converter-Adapter-Breakout/dp/B00IJXZQ7C/ref=pd_lpo_vtph_147_lp_img_3/131-9012372-9811114?_encoding=UTF8&psc=1&refRID=PH0S6PBC54E7YFZYEKZD) programmer can be used.
 
-> There are other methods to configure the ESP. Like communicate with it through an [*Arduino*](http://www.martyncurrey.com/arduino-to-esp8266-serial-commincation/), which is a bit more difficult. 
+> There are other methods to configure the ESP. Like communicate with it through an [*Arduino*](http://www.martyncurrey.com/arduino-to-esp8266-serial-commincation/), which is a bit more difficult.
 
-With the FTDI it is possible to connect the ESP directly to a pc and issue commands to change the baud rate. 
-
+With the FTDI it is possible to connect the ESP directly to a pc and issue commands to change the baud rate.
 
 ### Connect the ESP module to your laptop via the FTDI programmer
 
 Here is how you connect the FTDI:
- 
+
 <img src="resources/FDTI-to-ESP.png" alt="FTDI hookup" width="700" align="middle">
- 
+
 When the ESP is connected to your pc through you FTDI, it is possible to communicate with the module. This can be done via the **Serial Monitor** of the Arduino:
 
 * Select the right Serial Port via Tools > Port
@@ -101,18 +100,21 @@ When the ESP is connected to your pc through you FTDI, it is possible to communi
 
 # Flow of the program
 ---
-* At the start of the loop a connection with the ESP is tested. The explorer sets the ESP into host mode with the following command: `AT+CWMODE=1` .
-* If the connection is not working. It retries until it does. The `waitForOKFromESP` function is used for this, see the chapter: *Functions* for more information.
-* When a connection is confirmed it continues and sends the command to scan for WiFi networks `AT+CWLAP`.
-* Then it stays in a loop as long as `millis() < timeout && bssidNumber < ACCESS_POINTS` is true.
-* The `readLineFromESP` function is then called, see the chapter: *Functions* for more information.
-* When the string comes back, it checks if there is a valid response. Which is `+CWLAP`
-* The string is then further processed. By breaking it in smaller tokens.
-* The fourth token is the bssid.
-* The fourth token is then proofed, if this is successful the bssid is put into an array.
+* In the setup a connection with the ESP is tested. The explorer sets the ESP into host mode with the following command: `AT+CWMODE=1` .
+* If the communication is not working. The physical connection needs to be checked and the device needs to restart.
+* When a connection is confirmed it continues to the loop and sends the command to scan for WiFi networks `AT+CWLAP`.
+* It reads out the buffer. If the ESP does not echo back the command, the loop is broken. If it does it continues.
+* Then it stays in a loop as long as `strncmp("OK", line, 2) != 0` is false.
+* In the loop the `readLineFromESP` function is then called, see the chapter: *Functions* for more information.
+* A check is then preformed to see if the enough points have already been parsed or if the ESP gave a valid response.
+* As long as both equate to false the returned string is parsed
+* The string is then further processed. By breaking it into smaller tokens.
+* The BSSID is then proofed, if this is successful the BSSID and RSSI are put into an array.
+* The RSSI value is a single value and is allocated to simple array
+* The BSSID consists of multiple hex values and is assigned to a multidimensional array with the use of a for loop.
 * This is done by using the `HEX_PAIR_TO_BYTE`.
-* If all the bssid’s have been collected, the array is put into the payload array through the `sendBssid` function.
-* The payload is sent to the console and after a delay of 5 minutes everything is repeated.
+* If all the BSSIDs and RSSI values have been collected, the arrays are sent to the `sendAPS` function.
+* The payload is then sent to the console and after a delay of 5 minutes everything is repeated.
 
 
 # Important values/calculations
@@ -127,69 +129,52 @@ The above calculations turn a hex value into a byte value. In the `HEX_PAIR_TO_B
 
 In the above define you fill in the baud rate you set before.
 
-`#define ACCESS_POINTS 3`
+`#define MAX_ACCESS_POINTS 3`
 
-`#define SF_WIFI_BSSID_SIZE 6`
+`#define WIFI_BSSID_SIZE 6`
 
 `#define WAIT_TO_SEND 300000`
 
-The above declarations are another important part of the code. They define the number of bssid's that are scanned for. By changing the value of `ACCESS_POINTS` you can scan for more bssid's. And the `WAIT_TO_SEND` sets the amount of time in between scan cycles.
+The above declarations are another important part of the code. They define the number of BSSIDs that are scanned for. By changing the value of `MAX_ACCESS_POINTS` you can scan for more BSSIDs. And the `WAIT_TO_SEND` sets the amount of time in between scan cycles.
 
 
 ### Functions
 ---
-The following functions are used in the sketch: `WaitForOK`, `readLineFromESP`, `sendBssid`.
+The following functions are used in the sketch: `WaitForOKFromESP`, `readLineFromESP`, `sendAPs`.
 
 ```Arduino
-bool waitForOKFromESP(uint32_t waitTime, char buffer[])
+bool waitForOKFromESP()
 {
-  uint32_t timeout = millis() + waitTime;
-  while (millis() < timeout)
+  char line[128];
+  size_t read;
+  while ((read = readLineFromESP(line, sizeof(line))) == 0 || strncmp("AT+", line, 3) == 0)
   {
-    uint8_t l = ESPSERIAL.readBytesUntil('\n', buffer, ESP8266_BUFFER_SIZE);
-    if (l > 0 && strncmp("OK", buffer, 2) == 0)
-    {
-      return true;
-    }
-    delay(1);
   }
-  return false;
+  return strncmp("OK", line, 2) == 0;
 }
 ```
 
-The `waitForOKFromESP` function is used at the start of the loop to check if the communication with the ESP is up and running. It puts the data that is sent by the ESP in a buffer which is then checked if it contains the *OK* string by using the `strncmp` function. At the very end of a response, from the ESP these two characters are always present. So, these make a good end marker.
+The `waitForOKFromESP` function is used at the end of the setup to check if the communication with the ESP is up and running. It checks if there is a response from the ESP by reading out the buffer `line` and if the `AT+` part of the response is received. It then checks the buffer for the `OK` responds of the ESP and returns a boolean expression.
 
 ```Arduino
-char *readLineFromESP(uint32_t waitTime, char buffer[])
+size_t readLineFromESP(char *buffer, size_t size)
 {
-  uint32_t timeout = millis() + waitTime;
-  while (millis() < timeout)
+  size_t read = 0;
+  while ((read = espSerial.readBytesUntil('\n', buffer, size)) == 0)
   {
-    uint8_t l = ESPSERIAL.readBytesUntil('\n', buffer, ESP8266_BUFFER_SIZE);
-    if (l > 0)
-    {
-      buffer[l - 1] = '\0';
-      return buffer;
-    }
-    delay(1);
   }
-  return NULL;
+  buffer[read - 1] = '\0';
+  return read - 1;
 }
 ```
 
-The `readLineFromESP` function is similar to the `waitForOk` function. The biggest difference being the return of the buffer, instead of checking it in the function. The buffer is returned because the string that is sent from the ESP this time contains the information we need for the Wifi-localization.
+The `readLineFromESP` function requires a buffer and a size variable to determine how big the buffer is. Then the `espserial` is read out till a newline character is detected, while putting the data in the `buffer`. The `readBytesUntil` returns the number of characters in the buffer and this is put into the variable `read`. It will then insert a null terminator, `\0`, at the end of the buffer and return the read value - 1.
 
 ```Arduino
-void sendBssid(byte aps[][WIFI_BSSID_SIZE])
+void sendAPs(AP aps[], int count)
 {
-  byte payload[ACCESS_POINTS * WIFI_BSSID_SIZE];
-  uint8_t payloadByte = 0;
-  for (int i = 0; i < ACCESS_POINTS; i++)
-  {
-    memcpy(payload, aps, 6);
-  }
-  ttn.sendBytes(payload, sizeof(payload));
+  ttn.sendBytes((uint8_t *)aps, count * sizeof(AP));
 }
 ```
 
-The `sendBssid` function is used to send the collected bssid’s over LoRa to the TTN console. By going through the for loop it copies the bssid into the payload.
+The `sendAPs` function is used to send the collected BSSID and RSSI values over LoRa to the TTN console. By putting the array into the `sendBytes` function.
