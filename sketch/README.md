@@ -25,7 +25,7 @@ The sketch is built upon the use of the following hardware and components:
 
 The Sodaq ExpLoRer is a development board that has a potential of 3.3 volts on all pins except on the 5 volt pin. So it is possible to connect the ESP directly to the Sodaq board. The wiring can be seen in the image down below.
 
-<img src="../img/sodaq-esp-connection.png" alt="Image of sodaq-esp" width="700" align="middle">
+<img src="../img/sodaq-esp-connection.png" alt="Image sodaq-esp" width="700" align="middle">
 
 ##### **Communication**
 
@@ -70,11 +70,11 @@ void loop()
 
 A good response looks like this.
 
-<img src="../img/ATOK.png" alt="Image of a good response" width="1000" align="middle">
+<img src="../img/atok.png" alt="Image of a good response" width="1000" align="middle">
 
 If you're seeing garbage values, the baud rate of the ESP module has to be set.
 
-<img src="../img/WrongBaudrate.png" alt="Image of a garbage response" width="1000" align="middle">
+<img src="../img/wrong-baudrate.png" alt="Image of a garbage response" width="1000" align="middle">
 
 ## Set ESP's Baud Rate
 
@@ -88,7 +88,7 @@ With the FTDI it is possible to connect the ESP directly to a pc and issue comma
 
 Here is how you connect the FTDI:
 
-<img src="../img/FDTI-to-ESP.png" alt="FTDI hookup" width="700" align="middle">
+<img src="../img/fdti-to-esp.png" alt="FTDI hookup" width="700" align="middle">
 
 When the ESP is connected to your pc through you FTDI, it is possible to communicate with the module. This can be done via the **Serial Monitor** of the Arduino:
 
