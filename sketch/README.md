@@ -70,7 +70,7 @@ void loop()
 
 A good response looks like this.
 
-<img src="../img/atok.png" alt="Image of a good response" width="1000" align="middle">
+<img src="../img/at_ok.png" alt="Image of a good response" width="1000" align="middle">
 
 If you're seeing garbage values, the baud rate of the ESP module has to be set.
 
@@ -88,7 +88,7 @@ With the FTDI it is possible to connect the ESP directly to a pc and issue comma
 
 Here is how you connect the FTDI:
 
-<img src="../img/fdti-to-esp.png" alt="FTDI hookup" width="700" align="middle">
+<img src="../img/fdti_to_esp.png" alt="FTDI hookup" width="700" align="middle">
 
 When the ESP is connected to your pc through you FTDI, it is possible to communicate with the module. This can be done via the **Serial Monitor** of the Arduino:
 
