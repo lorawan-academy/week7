@@ -25,7 +25,7 @@ The sketch is built upon the use of the following hardware and components:
 
 The Sodaq ExpLoRer is a development board that has a potential of 3.3 volts on all pins except on the 5 volt pin. So it is possible to connect the ESP directly to the Sodaq board. The wiring can be seen in the image down below.
 
-<img src="../img/sodaq-esp-connection.png" alt="Temporary image sodaq-esp" width="700" align="middle">
+<img src="../img/sodaq-esp-connection.png" alt="Image of sodaq-esp" width="700" align="middle">
 
 ##### **Communication**
 
